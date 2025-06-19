@@ -3,7 +3,8 @@ import 'dotenv/config';
 import {
     log as logger,
     registerHandlers,
-    registerSignals
+    registerSignals,
+    path as commonPath
 } from '@purinton/common';
 import cron from 'node-cron';
 import { runCheckForAllServers } from './src/runCheckForAllServers.mjs';
