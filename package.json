@@ -2,7 +2,7 @@
     "name": "@purinton/updater",
     "type": "module",
     "version": "1.0.0",
-    "description": "A template for starting new Node.js projects.",
+    "description": "Automated system updater and service manager for Red Hat-based Linux servers via SSH (yum/dnf). Not for Debian/Ubuntu.",
     "main": "updater.mjs",
     "scripts": {
         "start": "node updater.mjs",
@@ -14,7 +14,19 @@
     },
     "keywords": [
         "updater",
-        "nodejs"
+        "nodejs",
+        "yum",
+        "dnf",
+        "redhat",
+        "centos",
+        "fedora",
+        "rocky",
+        "alma",
+        "linux",
+        "ssh",
+        "systemd",
+        "automation",
+        "service management"
     ],
     "author": "Russell Purinton <russell@purinton.us>",
     "license": "MIT",
