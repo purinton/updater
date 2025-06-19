@@ -13,7 +13,7 @@ function createMockLogger() {
 
 describe('checkUpdate', () => {
     test('logs and sends message when updates are found', async () => {
-        const logger = createMockLogger();
+        const log = createMockLogger();
         let sentMsg;
         const mockSshExec = jest.fn().mockResolvedValue([{ result: 'update1\nupdate2', code: 1 }]);
         const mockSend = jest.fn(async (msg) => { sentMsg = msg; });
@@ -22,16 +22,16 @@ describe('checkUpdate', () => {
             username: 'user1',
             sshExecFn: mockSshExec,
             sendMsg: mockSend,
-            logger
+            log
         });
-        expect(logger.info).toHaveBeenCalledWith('Updates found', expect.objectContaining({ host: 'host1', username: 'user1', code: 1 }));
+        expect(log.info).toHaveBeenCalledWith('Updates found', expect.objectContaining({ host: 'host1', username: 'user1', code: 1 }));
         expect(sentMsg.body.content).toContain('Updates found on user1@host1');
-        expect(logger.debug).toHaveBeenCalledWith('Checking updates', { host: 'host1', username: 'user1' });
-        expect(logger.debug).toHaveBeenCalledWith('Update check result', { host: 'host1', username: 'user1', code: 1 });
+        expect(log.debug).toHaveBeenCalledWith('Checking updates', { host: 'host1', username: 'user1' });
+        expect(log.debug).toHaveBeenCalledWith('Update check result', { host: 'host1', username: 'user1', code: 1 });
     });
 
     test('logs when no updates are found and does not send message', async () => {
-        const logger = createMockLogger();
+        const log = createMockLogger();
         let sentMsg = null;
         const mockSshExec = jest.fn().mockResolvedValue([{ result: '', code: 0 }]);
         const mockSend = jest.fn(async (msg) => { sentMsg = msg; });
@@ -40,16 +40,16 @@ describe('checkUpdate', () => {
             username: 'user2',
             sshExecFn: mockSshExec,
             sendMsg: mockSend,
-            logger
+            log
         });
-        expect(logger.info).toHaveBeenCalledWith('No updates found', expect.objectContaining({ host: 'host2', username: 'user2' }));
+        expect(log.info).toHaveBeenCalledWith('No updates found', expect.objectContaining({ host: 'host2', username: 'user2' }));
         expect(sentMsg).toBeNull();
-        expect(logger.debug).toHaveBeenCalledWith('Checking updates', { host: 'host2', username: 'user2' });
-        expect(logger.debug).toHaveBeenCalledWith('Update check result', { host: 'host2', username: 'user2', code: 0 });
+        expect(log.debug).toHaveBeenCalledWith('Checking updates', { host: 'host2', username: 'user2' });
+        expect(log.debug).toHaveBeenCalledWith('Update check result', { host: 'host2', username: 'user2', code: 0 });
     });
 
     test('logs and sends error message on exception, includes message and stack', async () => {
-        const logger = createMockLogger();
+        const log = createMockLogger();
         let sentMsg;
         const error = new Error('ssh fail');
         const mockSshExec = jest.fn().mockRejectedValue(error);
@@ -59,10 +59,10 @@ describe('checkUpdate', () => {
             username: 'user3',
             sshExecFn: mockSshExec,
             sendMsg: mockSend,
-            logger
+            log
         });
-        // Check logger.error called with errorMessage and errorStack
-        expect(logger.error).toHaveBeenCalledWith('Error checking updates', expect.objectContaining({
+        // Check log.error called with errorMessage and errorStack
+        expect(log.error).toHaveBeenCalledWith('Error checking updates', expect.objectContaining({
             host: 'host3',
             username: 'user3',
             errorMessage: 'ssh fail',
@@ -76,7 +76,7 @@ describe('checkUpdate', () => {
 
 describe('main', () => {
     test('calls checkUpdate for each host in servers.json', async () => {
-        const logger = createMockLogger();
+        const log = createMockLogger();
         const fakeServers = {
             'userA@hostA': [],
             'userB@hostB': []
@@ -85,14 +85,13 @@ describe('main', () => {
             existsSync: jest.fn(() => true),
             readFileSync: jest.fn(() => JSON.stringify(fakeServers))
         };
-        const called = [];
         const mockSshExec = jest.fn().mockResolvedValue([{ result: '', code: 0 }]);
         const mockSend = jest.fn();
         await main({
             serversFile: 'fake.json',
             sshExecFn: mockSshExec,
             sendMsg: mockSend,
-            logger,
+            log,
             fsLib: mockFs
         });
         expect(mockFs.existsSync).toHaveBeenCalledWith('fake.json');
@@ -102,7 +101,7 @@ describe('main', () => {
     });
 
     test('exits if servers file does not exist', async () => {
-        const logger = createMockLogger();
+        const log = createMockLogger();
         const mockFs = {
             existsSync: jest.fn(() => false),
             readFileSync: jest.fn(() => '')
@@ -110,15 +109,15 @@ describe('main', () => {
         const oldExit = process.exit;
         process.exit = jest.fn(() => { throw new Error('exit'); });
         try {
-            await main({ serversFile: 'missing.json', logger, fsLib: mockFs });
+            await main({ serversFile: 'missing.json', log, fsLib: mockFs });
         } catch { }
         expect(process.exit).toHaveBeenCalled();
-        expect(logger.error).toHaveBeenCalledWith('Servers file not found: missing.json');
+        expect(log.error).toHaveBeenCalledWith('Servers file not found: missing.json');
         process.exit = oldExit;
     });
 
     test('exits if servers file is invalid JSON', async () => {
-        const logger = createMockLogger();
+        const log = createMockLogger();
         const mockFs = {
             existsSync: jest.fn(() => true),
             readFileSync: jest.fn(() => 'not-json')
@@ -126,15 +125,15 @@ describe('main', () => {
         const oldExit = process.exit;
         process.exit = jest.fn(() => { throw new Error('exit'); });
         try {
-            await main({ serversFile: 'bad.json', logger, fsLib: mockFs });
+            await main({ serversFile: 'bad.json', log, fsLib: mockFs });
         } catch { }
         expect(process.exit).toHaveBeenCalled();
-        expect(logger.error).toHaveBeenCalledWith('Invalid JSON in servers file: bad.json');
+        expect(log.error).toHaveBeenCalledWith('Invalid JSON in servers file: bad.json');
         process.exit = oldExit;
     });
 
     test('exits if servers.json is empty', async () => {
-        const logger = createMockLogger();
+        const log = createMockLogger();
         const mockFs = {
             existsSync: jest.fn(() => true),
             readFileSync: jest.fn(() => JSON.stringify({}))
@@ -142,10 +141,10 @@ describe('main', () => {
         const oldExit = process.exit;
         process.exit = jest.fn(() => { throw new Error('exit'); });
         try {
-            await main({ serversFile: 'empty.json', logger, fsLib: mockFs });
+            await main({ serversFile: 'empty.json', log, fsLib: mockFs });
         } catch { }
         expect(process.exit).toHaveBeenCalled();
-        expect(logger.error).toHaveBeenCalledWith('No servers defined in servers.json');
+        expect(log.error).toHaveBeenCalledWith('No servers defined in servers.json');
         process.exit = oldExit;
     });
 });

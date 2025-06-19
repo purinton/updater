@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import 'dotenv/config';
 import {
-    log as defaultLog,
+    log as logger,
     fs,
     path as commonPath,
     registerHandlers,
@@ -17,27 +17,27 @@ import { sendMessage } from '@purinton/discord-webhook';
  * @param {string} options.username
  * @param {Function} [options.sshExecFn]
  * @param {Function} [options.sendMsg]
- * @param {Object} [options.logger]
+ * @param {Object} [options.log]
  */
 export async function checkUpdate({
     host,
     username,
     sshExecFn = sshExec,
     sendMsg = sendMessage,
-    logger = defaultLog
+    log = logger
 } = {}) {
-    logger.debug('Checking updates', { host, username });
+    log.debug('Checking updates', { host, username });
     try {
         const [{ result, code }] = await sshExecFn({ host, username, commands: ['yum -y check-update'] });
-        logger.debug('Update check result', { host, username, code });
+        log.debug('Update check result', { host, username, code });
         if (code !== 0) {
-            logger.info('Updates found', { host, username, code });
+            log.info('Updates found', { host, username, code });
             await sendMsg({ body: { content: `Updates found on ${username}@${host}:\n${result.slice(0, 1900)}` } });
         } else {
-            logger.info('No updates found', { host, username });
+            log.info('No updates found', { host, username });
         }
     } catch (err) {
-        logger.error('Error checking updates', {
+        log.error('Error checking updates', {
             host,
             username,
             errorMessage: err?.message,
@@ -54,19 +54,17 @@ export async function checkUpdate({
  * @param {string} [options.serversFile]
  * @param {Function} [options.sshExecFn]
  * @param {Function} [options.sendMsg]
- * @param {Object} [options.logger]
+ * @param {Object} [options.log]
  */
 export async function main({
     serversFile = commonPath(import.meta, 'servers.json'),
     sshExecFn = sshExec,
     sendMsg = sendMessage,
-    logger = defaultLog,
+    log = logger,
     fsLib = fs
 } = {}) {
-    registerHandlers({ log: defaultLog });
-    registerSignals({ log: defaultLog });
     if (!fsLib.existsSync(serversFile)) {
-        logger.error(`Servers file not found: ${serversFile}`);
+        log.error(`Servers file not found: ${serversFile}`);
         process.exit(1);
     }
     const content = fsLib.readFileSync(serversFile, 'utf8');
@@ -74,27 +72,28 @@ export async function main({
     try {
         servers = JSON.parse(content);
     } catch {
-        logger.error(`Invalid JSON in servers file: ${serversFile}`);
+        log.error(`Invalid JSON in servers file: ${serversFile}`);
         process.exit(1);
     }
     const hosts = Object.keys(servers || {});
     if (hosts.length === 0) {
-        logger.error('No servers defined in servers.json');
+        log.error('No servers defined in servers.json');
         process.exit(1);
     }
     await Promise.all(
         hosts.map(entry => {
-            const [username] = entry.split('@');
-            const [host] = entry.split('@').slice(1);
-            return checkUpdate({ host, username, sshExecFn, sendMsg, logger });
+            const [username, host] = entry.split('@');
+            return checkUpdate({ host, username, sshExecFn, sendMsg, log });
         })
     );
 }
 
 // CLI entrypoint
 if (process.env.NODE_ENV !== 'test') {
+    registerHandlers({ log: logger });
+    registerSignals({ log: logger });
     main().catch(err => {
-        defaultLog.error('Fatal error in main', err);
+        logger.error('Fatal error in main', err);
         process.exit(1);
     });
 }
