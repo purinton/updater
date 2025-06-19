@@ -85,7 +85,8 @@ export async function main({
     await Promise.all(
         hosts.map(entry => {
             const [username] = entry.split('@');
-            return checkUpdate({ host: entry, username, sshExecFn, sendMsg, logger });
+            const [host] = entry.split('@').slice(1);
+            return checkUpdate({ host, username, sshExecFn, sendMsg, logger });
         })
     );
 }
