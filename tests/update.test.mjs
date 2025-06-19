@@ -43,7 +43,7 @@ describe('stopServices', () => {
     const sshExec = jest.fn().mockResolvedValue([]);
     const log = { info: jest.fn(), error: jest.fn() };
     await stopServices('user@host', ['svc1', 'svc2'], log, sshExec);
-    expect(sshExec).toHaveBeenCalledWith({ host: 'user@host', commands: ['sudo systemctl stop svc1 svc2'] });
+    expect(sshExec).toHaveBeenCalledWith({ host: 'host', username: 'user', commands: ['sudo systemctl stop svc1 svc2'] });
   });
   it('logs and skips if no services', async () => {
     const sshExec = jest.fn();
@@ -59,7 +59,7 @@ describe('updateAndReboot', () => {
     const sshExec = jest.fn().mockResolvedValue([]);
     const log = { info: jest.fn(), error: jest.fn() };
     await updateAndReboot('user@host', log, sshExec);
-    expect(sshExec).toHaveBeenCalledWith({ host: 'user@host', commands: ['yum -y update && reboot'] });
+    expect(sshExec).toHaveBeenCalledWith({ host: 'host', username: 'user', commands: ['yum -y update && reboot'] });
   });
 });
 
