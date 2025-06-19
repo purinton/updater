@@ -9,6 +9,7 @@ import {
 } from '@purinton/common';
 import { sshExec } from '@purinton/ssh-client';
 import { sendMessage } from '@purinton/discord-webhook';
+import cron from 'node-cron';
 
 /**
  * Check for yum updates on a host via SSH.
@@ -92,9 +93,18 @@ export async function main({
 if (process.env.NODE_ENV !== 'test') {
     registerHandlers({ log: logger });
     registerSignals({ log: logger });
+    // Run immediately on startup
     main().catch(err => {
         logger.error('Fatal error in main', err);
         process.exit(1);
     });
+    // Schedule to run at the top of each hour
+    cron.schedule('0 * * * *', () => {
+        main().catch(err => {
+            logger.error('Fatal error in scheduled main', err);
+        });
+    });
+    // Keep process alive
+    setInterval(() => {}, 1 << 30);
 }
 

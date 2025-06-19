@@ -1,5 +1,5 @@
 [Unit]
-Description=updater
+Description=check-update
 After=network-online.target
 Wants=network-online.target
 StartLimitBurst=3
@@ -11,7 +11,7 @@ Group=root
 RestartSec=5
 Restart=on-failure
 WorkingDirectory=/opt/updater
-ExecStart=/opt/updater/updater.mjs
+ExecStart=/opt/updater/check-update.mjs
 EnvironmentFile=/opt/updater/.env
 
 [Install]
