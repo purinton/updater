@@ -24,10 +24,10 @@ describe('checkUpdate', () => {
             sendMsg: mockSend,
             log
         });
-        expect(log.info).toHaveBeenCalledWith('Updates found', expect.objectContaining({ host: 'host1', username: 'user1', code: 1 }));
+        expect(log.info).toHaveBeenCalledWith('Updates found', expect.objectContaining({ host: 'host1', code: 1 }));
         expect(sentMsg.body.content).toContain('Updates found on user1@host1');
-        expect(log.debug).toHaveBeenCalledWith('Checking updates', { host: 'host1', username: 'user1' });
-        expect(log.debug).toHaveBeenCalledWith('Update check result', { host: 'host1', username: 'user1', code: 1 });
+        expect(log.debug).toHaveBeenCalledWith('Checking updates', { host: 'host1' });
+        expect(log.debug).toHaveBeenCalledWith('Update check result', { host: 'host1', code: 1 });
     });
 
     test('logs when no updates are found and does not send message', async () => {
@@ -42,10 +42,10 @@ describe('checkUpdate', () => {
             sendMsg: mockSend,
             log
         });
-        expect(log.info).toHaveBeenCalledWith('No updates found', expect.objectContaining({ host: 'host2', username: 'user2' }));
+        expect(log.info).toHaveBeenCalledWith('No updates found', expect.objectContaining({ host: 'host2' }));
         expect(sentMsg).toBeNull();
-        expect(log.debug).toHaveBeenCalledWith('Checking updates', { host: 'host2', username: 'user2' });
-        expect(log.debug).toHaveBeenCalledWith('Update check result', { host: 'host2', username: 'user2', code: 0 });
+        expect(log.debug).toHaveBeenCalledWith('Checking updates', { host: 'host2' });
+        expect(log.debug).toHaveBeenCalledWith('Update check result', { host: 'host2', code: 0 });
     });
 
     test('logs and sends error message on exception, includes message and stack', async () => {
@@ -64,7 +64,6 @@ describe('checkUpdate', () => {
         // Check log.error called with errorMessage and errorStack
         expect(log.error).toHaveBeenCalledWith('Error checking updates', expect.objectContaining({
             host: 'host3',
-            username: 'user3',
             errorMessage: 'ssh fail',
             errorStack: error.stack,
             error

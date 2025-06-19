@@ -26,15 +26,15 @@ export async function checkUpdate({
     sendMsg = sendMessage,
     log = logger
 } = {}) {
-    log.debug('Checking updates', { host, username });
+    log.debug('Checking updates', { host });
     try {
         const [{ result, code }] = await sshExecFn({ host, username, commands: ['yum -y check-update'] });
-        log.debug('Update check result', { host, username, code });
+        log.debug('Update check result', { host, code });
         if (code !== 0) {
-            log.info('Updates found', { host, username, code });
+            log.info('Updates found', { host, code });
             await sendMsg({ body: { content: `Updates found on ${username}@${host}:\n${result.slice(0, 1900)}` } });
         } else {
-            log.info('No updates found', { host, username });
+            log.info('No updates found', { host });
         }
     } catch (err) {
         log.error('Error checking updates', {
