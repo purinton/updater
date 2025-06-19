@@ -52,8 +52,8 @@ export async function runUpdater({ log = logger, serversFile, fsLib = defaultFs,
         log.info(`Processing ${group} server: ${host}`);
         await stopServices(userAtHost, services, log, sshExec);
         await updateAndReboot(userAtHost, log, sshExec);
-        await waitForHostOffline(userAtHost, 22, 600, 5, log, sleepFn);
-        await waitForHostOnline(userAtHost, 22, 600, 5, log, sleepFn);
+        await waitForHostOffline(host, 22, 600, 5, log, sleepFn);
+        await waitForHostOnline(host, 22, 600, 5, log, sleepFn);
         if (group !== 'dev') {
             await verifyServices(userAtHost, services, 5, log, sshExec, sleepFn);
         }
@@ -66,15 +66,17 @@ export async function stopServices(userAtHost, services, log = logger, sshExec =
         log.info(`No services defined for ${userAtHost} to stop.`);
         return;
     }
+    const [username, host] = userAtHost.split('@');
     const serviceList = services.join(' ');
     log.info(`Stopping services on ${userAtHost}: ${serviceList}...`);
-    await sshExec({ host: userAtHost, commands: [`sudo systemctl stop ${serviceList}`] });
+    await sshExec({ host, username, commands: [`sudo systemctl stop ${serviceList}`] });
     log.info(`Stopped services on ${userAtHost}`);
 }
 
 export async function updateAndReboot(userAtHost, log = logger, sshExec = defaultSshExec) {
+    const [username, host] = userAtHost.split('@');
     log.info(`Updating and rebooting ${userAtHost}...`);
-    await sshExec({ host: userAtHost, commands: ['yum -y update && reboot'] });
+    await sshExec({ host, username, commands: ['yum -y update && reboot'] });
     log.info(`Update/reboot command completed for ${userAtHost}`);
 }
 
@@ -174,13 +176,14 @@ export async function isHostOnline(userAtHost, port = 22, log = logger) {
 
 export async function verifyServices(userAtHost, services, checkInterval = 5, log = logger, sshExec = defaultSshExec, sleepFn = sleep) {
     if (!services || services.length === 0) return;
+    const [username, host] = userAtHost.split('@');
     log.info(`Verifying services on ${userAtHost}: ${services.join(', ')}`);
     const serviceList = services.join(' ');
     let attempt = 1;
     while (true) {
         let output;
         try {
-            output = await sshExec({ host: userAtHost, commands: [`systemctl is-active ${serviceList}`] });
+            output = await sshExec({ host, username, commands: [`systemctl is-active ${serviceList}`] });
         } catch (e) {
             log.error(`Attempt ${attempt}: Failed to check service status on ${userAtHost}: ${e}`);
             await sleepFn(checkInterval * 1000);
