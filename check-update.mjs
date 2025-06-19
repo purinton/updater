@@ -9,15 +9,17 @@ if (process.env.NODE_ENV !== 'test') {
     registerHandlers({ log });
     registerSignals({ log });
     const serversFile = path(import.meta, 'servers.json');
-    runCheckForAllServers({ serversFile }).catch(err => {
+    await runCheckForAllServers({ serversFile }).catch(err => {
         log.error('Fatal error in main', err);
         process.exit(1);
     });
     cron.schedule('0 * * * *', () => {
+        log.info('Running scheduled check for updates');
         runCheckForAllServers({ serversFile }).catch(err => {
             log.error('Fatal error in scheduled main', err);
         });
     });
+    log.info('Scheduled check for updates every hour');
     setInterval(() => { }, 1 << 30);
 }
 
