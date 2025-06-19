@@ -207,3 +207,12 @@ export async function verifyServices(userAtHost, services, checkInterval = 5, lo
     // All services are active, wait 5 seconds before continuing
     await sleepFn(5000);
 }
+
+// CLI entrypoint
+if (process.env.NODE_ENV !== 'test') {
+    registerHandlers({ log: logger });
+    registerSignals({ log: logger });
+    const serversFile = commonPath(import.meta, 'servers.json');
+    runUpdater({ serversFile });
+}
+
