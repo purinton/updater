@@ -16,8 +16,8 @@ export async function main(options = {}) {
 if (process.env.NODE_ENV !== 'test') {
     registerHandlers({ log: logger });
     registerSignals({ log: logger });
-    // Run immediately on startup
-    main().catch(err => {
+    const serversFile = commonPath(import.meta, 'servers.json');
+    main({ serversFile }).catch(err => {
         logger.error('Fatal error in main', err);
         process.exit(1);
     });
