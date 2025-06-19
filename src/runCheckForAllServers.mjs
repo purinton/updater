@@ -5,7 +5,7 @@ import { sshExec } from '@purinton/ssh-client';
 import { sendMessage } from '@purinton/discord-webhook';
 
 export async function runCheckForAllServers({
-    serversFile = commonPath(import.meta, 'servers.json'),
+    serversFile = commonPath(import.meta, '..', 'servers.json'),
     sshExecFn = sshExec,
     sendMsg = sendMessage,
     log = logger,
