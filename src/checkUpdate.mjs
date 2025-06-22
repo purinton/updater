@@ -17,7 +17,7 @@ export async function checkUpdate({
         log.debug('Update check result', { host, code });
         if (code !== 0) {
             log.info('Updates found', { host, code });
-            await notifyUpdate({ username, host, result, sendMsg });
+            await notifyUpdate({ host, result, sendMsg });
         } else {
             log.info('No updates found', { host });
         }

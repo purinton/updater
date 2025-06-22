@@ -12,7 +12,7 @@ function createMockLogger() {
 }
 
 describe('checkUpdate', () => {
-    test('logs and sends message when updates are found', async () => {
+    test('logs and sends embed when updates are found', async () => {
         const log = createMockLogger();
         let sentMsg;
         const mockSshExec = jest.fn().mockResolvedValue([{ result: 'update1\nupdate2', code: 1 }]);
@@ -25,7 +25,15 @@ describe('checkUpdate', () => {
             log
         });
         expect(log.info).toHaveBeenCalledWith('Updates found', expect.objectContaining({ host: 'host1', code: 1 }));
-        expect(sentMsg.body.content).toContain('Updates found on user1@host1');
+        expect(sentMsg.body.embeds).toBeDefined();
+        expect(sentMsg.body.embeds[0].title).toBe('Updates available on host1');
+        expect(sentMsg.body.embeds[0].color).toBe(0xFFD700);
+        expect(sentMsg.body.embeds[0].description).toContain('update1');
+        expect(sentMsg.body.embeds[0].description).toContain('update2');
+        expect(sentMsg.body.embeds[0].description.startsWith('```')).toBe(true);
+        expect(sentMsg.body.embeds[0].description.endsWith('```')).toBe(true);
+        expect(sentMsg.body.embeds[0].thumbnail).toBeDefined();
+        expect(sentMsg.body.embeds[0].thumbnail.url).toBe('https://purinton.us/logos/purinton_64.png');
         expect(log.debug).toHaveBeenCalledWith('Checking updates', { host: 'host1' });
         expect(log.debug).toHaveBeenCalledWith('Update check result', { host: 'host1', code: 1 });
     });

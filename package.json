@@ -50,6 +50,6 @@
         "@purinton/discord-webhook": "^1.0.3",
         "@purinton/ssh-client": "^1.0.1",
         "dotenv": "^16.5.0",
-        "node-cron": "^4.1.0"
+        "node-cron": "^4.1.1"
     }
 }
