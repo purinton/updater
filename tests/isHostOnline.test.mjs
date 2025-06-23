@@ -5,7 +5,7 @@ import net from 'net';
 
 describe('isHostOnline', () => {
   it('returns false if DNS lookup fails', async () => {
-    const log = { info: jest.fn(), error: jest.fn() };
+    const log = { debug: jest.fn(), info: jest.fn(), error: jest.fn() };
     // Patch dns.lookup to always error
     jest.spyOn(dns, 'lookup').mockImplementation((host, cb) => cb(new Error('fail')));
     const result = await isHostOnline('user@badhost', 22, log);
@@ -13,61 +13,84 @@ describe('isHostOnline', () => {
   });
 
   it('returns true if TCP connect receives data', async () => {
-    const log = { info: jest.fn(), error: jest.fn() };
+    const log = { debug: jest.fn(), info: jest.fn(), error: jest.fn() };
     jest.spyOn(dns, 'lookup').mockImplementation((host, cb) => cb(null, '127.0.0.1'));
-    const on = jest.fn();
-    const end = jest.fn();
-    const socket = { setTimeout: jest.fn(), on, end };
+
+    const handlers = {};
+    const socket = {
+      setTimeout: jest.fn(),
+      on: (event, cb) => { handlers[event] = cb; },
+      end: jest.fn(),
+    };
+
     jest.spyOn(net, 'createConnection').mockReturnValue(socket);
-    // Simulate 'data' event
+
     setTimeout(() => {
-      const dataHandler = on.mock.calls.find(([event]) => event === 'data')[1];
-      dataHandler(Buffer.from('hello'));
+      handlers['data'](Buffer.from('hello'));
     }, 0);
+
     const result = await isHostOnline('user@host', 22, log);
     expect(result).toBe(true);
   });
 
   it('returns false if TCP connect times out', async () => {
-    const log = { info: jest.fn(), error: jest.fn() };
+    const log = { debug: jest.fn(), info: jest.fn(), error: jest.fn() };
     jest.spyOn(dns, 'lookup').mockImplementation((host, cb) => cb(null, '127.0.0.1'));
-    const on = jest.fn();
-    const destroy = jest.fn();
-    const socket = { setTimeout: jest.fn(), on, destroy };
+
+    const handlers = {};
+    const socket = {
+      setTimeout: jest.fn(),
+      on: (event, cb) => { handlers[event] = cb; },
+      destroy: jest.fn(),
+    };
+
     jest.spyOn(net, 'createConnection').mockReturnValue(socket);
+
     setTimeout(() => {
-      const timeoutHandler = on.mock.calls.find(([event]) => event === 'timeout')[1];
-      timeoutHandler();
+      handlers['timeout']();
     }, 0);
+
     const result = await isHostOnline('user@host', 22, log);
     expect(result).toBe(false);
   });
 
   it('returns false if TCP connect errors', async () => {
-    const log = { info: jest.fn(), error: jest.fn() };
+    const log = { debug: jest.fn(), info: jest.fn(), error: jest.fn() };
     jest.spyOn(dns, 'lookup').mockImplementation((host, cb) => cb(null, '127.0.0.1'));
-    const on = jest.fn();
-    const destroy = jest.fn();
-    const socket = { setTimeout: jest.fn(), on, destroy };
+
+    const handlers = {};
+    const socket = {
+      setTimeout: jest.fn(),
+      on: (event, cb) => { handlers[event] = cb; },
+      destroy: jest.fn(),
+    };
+
     jest.spyOn(net, 'createConnection').mockReturnValue(socket);
+
     setTimeout(() => {
-      const errorHandler = on.mock.calls.find(([event]) => event === 'error')[1];
-      errorHandler(new Error('fail'));
+      handlers['error'](new Error('fail'));
     }, 0);
+
     const result = await isHostOnline('user@host', 22, log);
     expect(result).toBe(false);
   });
 
   it('returns false if TCP socket closes before resolving', async () => {
-    const log = { info: jest.fn(), error: jest.fn() };
+    const log = { debug: jest.fn(), info: jest.fn(), error: jest.fn() };
     jest.spyOn(dns, 'lookup').mockImplementation((host, cb) => cb(null, '127.0.0.1'));
-    const on = jest.fn();
-    const socket = { setTimeout: jest.fn(), on };
+
+    const handlers = {};
+    const socket = {
+      setTimeout: jest.fn(),
+      on: (event, cb) => { handlers[event] = cb; },
+    };
+
     jest.spyOn(net, 'createConnection').mockReturnValue(socket);
+
     setTimeout(() => {
-      const closeHandler = on.mock.calls.find(([event]) => event === 'close')[1];
-      closeHandler(false);
+      handlers['close'](false);
     }, 0);
+
     const result = await isHostOnline('user@host', 22, log);
     expect(result).toBe(false);
   });
