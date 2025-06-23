@@ -35,10 +35,8 @@ A Node.js tool for automating system updates and service management across multi
 1. **Clone this repository:**
 
    ```bash
-   git clone https://github.com/purinton/updater.git your-project-name
-   cd your-project-name
-   rm -rf .git
-   git init
+   git clone https://github.com/purinton/updater.git
+   cd updater
    npm install
    ```
 
@@ -109,9 +107,11 @@ A Node.js tool for automating system updates and service management across multi
 
 ## Support
 
-For help or questions, join the community:
+For help, questions, or to chat with the author and community, visit:
 
-[Purinton Dev on Discord](https://discord.gg/QSBxQnX7PF)
+[![Discord](https://purinton.us/logos/discord_96.png)](https://discord.gg/QSBxQnX7PF)[![Purinton Dev](https://purinton.us/logos/purinton_96.png)](https://discord.gg/QSBxQnX7PF)
+
+**[Purinton Dev on Discord](https://discord.gg/QSBxQnX7PF)**
 
 ## License
 
@@ -119,5 +119,7 @@ For help or questions, join the community:
 
 ## Links
 
-- [GitHub](https://github.com/purinton/updater)
+- [GitHub Repo](https://github.com/purinton/updater)
+- [GitHub Org](https://github.com/purinton)
+- [GitHub Personal](https://github.com/rpurinton)
 - [Discord](https://discord.gg/QSBxQnX7PF)
