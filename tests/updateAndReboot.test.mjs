@@ -6,6 +6,6 @@ describe('updateAndReboot', () => {
     const sshExec = jest.fn().mockResolvedValue([]);
     const log = { info: jest.fn(), error: jest.fn() };
     await updateAndReboot('user@host', log, sshExec);
-    expect(sshExec).toHaveBeenCalledWith({ host: 'host', username: 'user', commands: ['yum -y update && reboot'] });
+    expect(sshExec).toHaveBeenCalledWith({ host: 'host', username: 'user', commands: ['yum clean all && yum -y update && reboot'] });
   });
 });
