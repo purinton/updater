@@ -1,7 +1,7 @@
 {
     "name": "@purinton/updater",
     "type": "module",
-    "version": "1.0.7",
+    "version": "1.0.8",
     "description": "Automated system updater and service manager for Red Hat-based Linux servers via SSH (yum/dnf). Not for Debian/Ubuntu.",
     "main": "updater.mjs",
     "scripts": {
